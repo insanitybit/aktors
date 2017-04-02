@@ -25,16 +25,17 @@ pub trait ActorRef: Clone {
 
 pub struct Supervisor<H, F>
     where H: Send + Spawn + Clone + 'static,
-          F: Send + 'static + Fn(H) -> Box<Actor> {
+          F: Send + 'static + Fn(H) -> Box<Actor>
+{
     map: std::collections::HashMap<String, (WorkerRef, ChildSpec<H, F>)>,
-    handle: H
+    handle: H,
 }
 
 impl<H, F> Supervisor<H, F>
     where H: Send + Spawn + Clone + 'static,
-          F: Send + 'static + Fn(H) -> Box<Actor>  {
-    pub fn new(handle: H, child_specs: Vec<ChildSpec<H, F>>) -> Supervisor<H, F>
-    {
+          F: Send + 'static + Fn(H) -> Box<Actor>
+{
+    pub fn new(handle: H, child_specs: Vec<ChildSpec<H, F>>) -> Supervisor<H, F> {
         let mut map = std::collections::HashMap::new();
 
         for spec in child_specs {
@@ -45,14 +46,15 @@ impl<H, F> Supervisor<H, F>
 
         Supervisor {
             map: map,
-            handle: handle
+            handle: handle,
         }
     }
 }
 
 impl<H, F> Actor for Supervisor<H, F>
     where H: Send + Spawn + Clone + 'static,
-          F: Send + 'static + Fn(H) -> Box<Actor>  {
+          F: Send + 'static + Fn(H) -> Box<Actor>
+{
     fn on_message(&mut self, msg: Box<Any + Send>) {
         if let Ok(msg) = msg.downcast::<SupervisorMessage>() {
             let id = msg.id.clone();
@@ -61,14 +63,14 @@ impl<H, F> Actor for Supervisor<H, F>
                 let &mut (ref mut actor, ref childspec) = val;
 
                 let msg = msg.msg;
-                let result = panic::catch_unwind(AssertUnwindSafe(|| {
-                    actor.send(msg);
-                }));
+                let result = panic::catch_unwind(AssertUnwindSafe(|| { actor.send(msg); }));
 
                 match result {
-                    Err(_) => *actor = actor_of(self.handle.clone(),
-                                                (childspec.start)(self.handle.clone())),
-                    _ => ()
+                    Err(_) => {
+                        *actor = actor_of(self.handle.clone(),
+                                          (childspec.start)(self.handle.clone()))
+                    }
+                    _ => (),
                 }
             }
         } else {
@@ -122,21 +124,23 @@ impl<H, F> ChildSpec<H, F>
     where H: Send + Spawn + Clone + 'static,
           F: Send + 'static + Fn(H) -> Box<Actor>
 {
-    pub fn new(    key: String,
-                   start: F,
-                   restart: Restart,
-                   shutdown: Shutdown,
-                   kind: ActorKind) -> ChildSpec<H, F> {
+    pub fn new(key: String,
+               start: F,
+               restart: Restart,
+               shutdown: Shutdown,
+               kind: ActorKind)
+               -> ChildSpec<H, F> {
         ChildSpec {
             key: key,
             start: start,
             restart: restart,
             shutdown: shutdown,
             kind: kind,
-            _ph: std::marker::PhantomData
+            _ph: std::marker::PhantomData,
         }
     }
 }
+
 struct SupervisorMessage {
     id: String,
     msg: Box<Any + Send>,
@@ -148,7 +152,10 @@ impl ActorRef for WorkerRef {
     }
 }
 
-pub fn supervised_actor_of<H, F>(exec: H, mut actor: Box<Actor>, policy: ChildSpec<H, F>) -> WorkerRef
+pub fn supervised_actor_of<H, F>(exec: H,
+                                 mut actor: Box<Actor>,
+                                 policy: ChildSpec<H, F>)
+                                 -> WorkerRef
     where H: Send + Spawn + Clone + 'static,
           F: Send + 'static + Fn(H) -> Box<Actor>
 {
@@ -243,26 +250,23 @@ mod tests {
 
     #[test]
     fn supervisors() {
-
         let system = ThreadPoolExecutor::with_thread_count(2).unwrap();
         let handle = system.handle();
 
-        let child_spec = ChildSpec::new(
-            "worker child".to_owned(),
-            move |handle| Box::new(MyActor::new(handle)) as Box<Actor>,
-            Restart::Temporary,
-            Shutdown::Eventually,
-            ActorKind::Worker
-        );
+        let child_spec = ChildSpec::new("worker child".to_owned(),
+                                        move |handle| Box::new(MyActor::new(handle)) as Box<Actor>,
+                                        Restart::Temporary,
+                                        Shutdown::Eventually,
+                                        ActorKind::Worker);
 
-        let mut supervisor_ref = actor_of(handle.clone(), Box::new(Supervisor::new(handle.clone(), vec![child_spec])) as Box<Actor>);
+        let mut supervisor_ref =
+            actor_of(handle.clone(),
+                     Box::new(Supervisor::new(handle.clone(), vec![child_spec])) as Box<Actor>);
 
-        supervisor_ref.send(
-            Box::new(
-                SupervisorMessage{
-                    id: "worker child".to_owned(),
-                    msg: Box::new(1000000 as u64)}
-            ));
+        supervisor_ref.send(Box::new(SupervisorMessage {
+            id: "worker child".to_owned(),
+            msg: Box::new(1000000 as u64),
+        }));
 
 
         drop(supervisor_ref);
