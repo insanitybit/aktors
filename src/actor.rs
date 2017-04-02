@@ -63,15 +63,15 @@ impl<H, F> Actor for Supervisor<H, F>
                 let &mut (ref mut actor, ref childspec) = val;
 
                 let msg = msg.msg;
-                let result = panic::catch_unwind(AssertUnwindSafe(|| { actor.send(msg); }));
+                actor.send(msg)
 
-                match result {
-                    Err(_) => {
-                        *actor = actor_of(self.handle.clone(),
-                                          (childspec.start)(self.handle.clone()))
-                    }
-                    _ => (),
-                }
+//                match result {
+//                    Err(_) => {
+//                        *actor = actor_of(self.handle.clone(),
+//                                          (childspec.start)(self.handle.clone()))
+//                    }
+//                    _ => (),
+//                }
             }
         } else {
             panic!("downcast error");
@@ -274,21 +274,15 @@ mod tests {
         let _ = system.run();
     }
 
-    //    #[test]
-    //    fn test_name() {
-    //
-    //        let system = ThreadPoolExecutor::with_thread_count(2).unwrap();
-    //
-    //        let actor = ;
-    //        let actor_ref = actor_of(system.handle(), actor);
-    //        actor_ref.send(Box::new(0 as u64));
-    //        drop(actor_ref);
-    //
-    //        let actor = Box::new(MyActor::new(system.handle())) as Box<Actor>;
-    //        let actor_ref = actor_of(system.handle(), actor);
-    //        actor_ref.send(Box::new(1000000 as u64));
-    //        drop(actor_ref);
-    //
-    //        let _ = system.run();
-    //    }
+        #[test]
+        fn test_name() {
+            let system = ThreadPoolExecutor::with_thread_count(2).unwrap();
+
+            let actor = MyActor::new(system.handle());
+            let mut actor_ref = actor_of(system.handle(), Box::new(actor));
+            actor_ref.send(Box::new(0 as u64));
+            drop(actor_ref);
+
+            let _ = system.run();
+        }
 }
