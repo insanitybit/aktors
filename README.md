@@ -11,7 +11,7 @@ we provided.
 # Actors
 
 We first declare our MyActor struct like any other. We take a 'handle' so that we can spawn
-child actors.
+child actors. (Note that the id is entirely unnecessary, an ActorRef will have its own unique identifier.)
 
 ```rust
     struct MyActor<H>
