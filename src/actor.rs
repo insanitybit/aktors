@@ -264,18 +264,8 @@ mod tests {
                     msg: Box::new(1000000 as u64)}
             ));
 
-        let mut other_ref = supervisor_ref.clone();
 
         drop(supervisor_ref);
-
-        other_ref.send(
-            Box::new(
-                SupervisorMessage{
-                    id: "worker child".to_owned(),
-                    msg: Box::new(1000000 as u64)}
-            ));
-
-        drop(other_ref);
 
         let _ = system.run();
     }
