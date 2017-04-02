@@ -1,4 +1,3 @@
-p# aktors
 Rust actor library with a bit of inspiration from Akka/Pykka
 
 Built with the 'fibers' crate.
