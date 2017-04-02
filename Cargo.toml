@@ -1,0 +1,14 @@
+[package]
+name = "aktors"
+version = "0.1.0"
+authors = ["insanitybit <insanitybit@gmail.com>"]
+
+[dependencies]
+futures = "0.1"
+fibers = "0.1"
+two-lock-queue = "*"
+chashmap = "2.*.*"
+
+[dependencies.uuid]
+version = "0.3.*"
+features = ["v4"]
