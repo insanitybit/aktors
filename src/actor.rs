@@ -248,23 +248,19 @@ mod tests {
     }
 
 
-    impl<H> Actor<Box<Any + Send>> for MyActor<H>
+    impl<H> Actor<u64> for MyActor<H>
         where H: Send + Spawn + Clone + 'static
     {
-        fn on_message(&mut self, msg: Box<Any + Send>) {
-            if let Some(number) = msg.downcast_ref::<u64>() {
-                if number % 1000 == 0 {
-                    println!("{} got {}", self.id, number);
-                }
-
-                //                if *number == 0 {panic!("zero!")};
-                let new_actor = MyActor::new(self.handle.clone());
-                let actor_ref = actor_of(self.handle.clone(), new_actor);
-                actor_ref.sender.send(Box::new(number + 1));
-                drop(actor_ref);
-            } else {
-                panic!("downcast error");
+        fn on_message(&mut self, msg: u64) {
+            let number = msg;
+            if number % 1000 == 0 {
+                println!("{} got {}", self.id, number);
             }
+
+            //                if *number == 0 {panic!("zero!")};
+            let new_actor = MyActor::new(self.handle.clone());
+            let actor_ref = actor_of(self.handle.clone(), new_actor);
+            actor_ref.sender.send(number + 1);
         }
     }
 
@@ -284,7 +280,7 @@ mod tests {
 
         supervisor_ref.send(SupervisorMessage {
                                 id: "worker child".to_owned(),
-                                msg: Box::new(1000000 as u64) as Box<Any + Send>,
+                                msg: 1000000,
                             });
 
         drop(supervisor_ref);
@@ -298,7 +294,7 @@ mod tests {
 
         let actor = MyActor::new(system.handle());
         let mut actor_ref = actor_of(system.handle(), actor);
-        actor_ref.send(Box::new(0 as u64));
+        actor_ref.send(0 as u64);
         drop(actor_ref);
 
         let _ = system.run();
