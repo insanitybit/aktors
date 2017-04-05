@@ -4,9 +4,6 @@ Built with the 'fibers' crate.
 
 # Example
 
-Here we create a supervisor, which spawns a single child. We then send a message to the child using the name
-we provided.
-
 # Actors
 
 We first declare our MyActor struct like any other. We take a 'handle' so that we can spawn
