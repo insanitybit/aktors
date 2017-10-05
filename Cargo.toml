@@ -5,10 +5,8 @@ authors = ["insanitybit <insanitybit@gmail.com>"]
 
 [dependencies]
 futures = "0.1"
-fibers = "0.1"
-two-lock-queue = "*"
-chashmap = "2.*.*"
+tokio-core = "*"
 
-[dependencies.uuid]
-version = "0.3.*"
-features = ["v4"]
+[dependencies.channel]
+git = "https://github.com/stjepang/channel"
+rev = "949ce33946d9e4686386ebbbe022b71de9b20950"

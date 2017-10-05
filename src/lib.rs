@@ -1,9 +1,8 @@
 #![feature(conservative_impl_trait)]
-extern crate fibers;
+extern crate channel;
+
+extern crate tokio_core;
 extern crate futures;
-extern crate two_lock_queue;
-extern crate chashmap;
-extern crate uuid;
 
 pub mod actor;
 
