@@ -6,6 +6,7 @@ use channel::{unbounded as chan};
 use futures::future::*;
 use std;
 
+#[derive(Clone)]
 pub struct SystemActor {
     remote: Remote
 }
