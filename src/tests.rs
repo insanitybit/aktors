@@ -1,14 +1,18 @@
+#[cfg(test)]
+
+use tokio::runtime::Runtime;
 use std::string::ToString;
+use crate::{PrintLoggerActor, PrintLogger};
+use tokio_async_await::compat::backward;
 
 #[test]
 fn test_aktor() {
-    println!("hi");
     async fn test_aktor_impl() -> Result<(), ()> {
         let logger = PrintLogger {};
         let mut log_actor = PrintLoggerActor::new(logger);
 
-        log_actor.info("info log".to_string());
-        log_actor.error("error!!".to_string());
+        await!(log_actor.info("info log".to_string()));
+        await!(log_actor.error("error!!".to_string()));
 
         Ok(())
     };
@@ -17,7 +21,6 @@ fn test_aktor() {
 
     rt.block_on(backward::Compat::new(test_aktor_impl()));
 
-    println!("Done");
 
     /*let system = ThreadPoolExecutor::with_thread_count(2).unwrap();
     let logger = PrintLogger {};

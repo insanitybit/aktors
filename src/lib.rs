@@ -5,26 +5,27 @@ extern crate futures;
 extern crate tokio;
 extern crate tokio_async_await;
 
-use futures::{Future, Poll, Async};
+use futures::{Future, Poll, Async, task};
 use futures::lazy;
 use futures::sync::mpsc::{Receiver, Sender, channel};
 use futures::stream::Stream;
 use futures::sink::Sink;
 use tokio_async_await::compat::backward;
 use tokio::runtime::Runtime;
+use futures::task::Task;
 
-use crate::tests;
+mod tests;
 
 struct PrintLogger {}
 
 impl PrintLogger {
-    pub async fn info(&mut self, data: String) -> Result<(), ()> {
-        println!("{}", data);
+    pub fn info(&mut self, data: String) -> Result<(), ()> {
+        println!("[INFO] - {}", data);
 
         Ok(())
     }
-    pub async fn error(&mut self, data: String) -> Result<(), ()> {
-        println!("{}", data);
+    pub fn error(&mut self, data: String) -> Result<(), ()> {
+        println!("[ERROR] - {}", data);
 
         Ok(())
     }
@@ -49,7 +50,7 @@ struct PrintLoggerActor {
 // This impl will provide an identical API to the impl for the underlying PrintLogger, as well as a
 // 'new' function, which will take an execution handle and an already constructed PrintLogger
 impl PrintLoggerActor {
-    pub fn new(actor_impl: PrintLogger) -> PrintLoggerActor {
+    pub fn new(actor_impl: PrintLogger) -> Self {
         let (sender, receiver) = channel(0);
         let id = "random string".to_owned();
 
@@ -66,11 +67,13 @@ impl PrintLoggerActor {
 
     pub async fn info(&mut self, data: String) {
         let msg = PrintLoggerMessage::Info { data };
+
         await!(self.sender.clone().send(msg));
     }
 
     pub async fn error(&mut self, data: String) {
         let msg = PrintLoggerMessage::Error { data };
+
         await!(self.sender.clone().send(msg));
     }
 }
@@ -82,8 +85,9 @@ impl Future for PrintLoggerActorRouter {
     fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
         match self.receiver.poll() {
             Ok(Async::Ready(Some(msg))) => {
-                self.actor_impl.route_message(msg);
+                task::current().notify(); // we should poll on receiver again
 
+                self.actor_impl.route_message(msg);
                 Ok(Async::NotReady)
             },
             Ok(Async::Ready(None)) => {
@@ -100,11 +104,13 @@ impl Future for PrintLoggerActorRouter {
 // We lastly generate the route_message function, which deconstructs our message and routes it to
 // the underlying function
 impl PrintLogger {
-    pub async fn route_message(&mut self, msg: PrintLoggerMessage) {
+    pub fn route_message(&mut self, msg: PrintLoggerMessage) -> Result<(), ()> {
         match msg {
-            PrintLoggerMessage::Info { data } => await!(self.info(data)),
-            PrintLoggerMessage::Error { data } => await!(self.error(data)),
+            PrintLoggerMessage::Info { data } => self.info(data),
+            PrintLoggerMessage::Error { data } => self.error(data),
         };
+
+        Ok(())
     }
 }
 
