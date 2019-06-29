@@ -9,8 +9,7 @@ futures = "^0.1"
 fibers = "0.1"
 two-lock-queue = "*"
 chashmap = "2.*.*"
-tokio = {version = "0.1.7", features = ["async-await-preview"]}
-tokio-async-await = "0.1.7"
+tokio = {version = "^0.1"}
 
 [dependencies.uuid]
 version = "0.3.*"

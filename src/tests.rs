@@ -1,35 +1,29 @@
 #[cfg(test)]
 
+use crate::futures::Future;
+use futures::lazy;
 use tokio::runtime::Runtime;
 use std::string::ToString;
-use crate::{PrintLoggerActor, PrintLogger};
-use tokio_async_await::compat::backward;
+use crate::{PrintLoggerActor, PrintLogger, CountLogger, CountLoggerActor};
 
 #[test]
 fn test_aktor() {
-    async fn test_aktor_impl() -> Result<(), ()> {
-        let logger = PrintLogger {};
-        let mut log_actor = PrintLoggerActor::new(logger);
-
-        await!(log_actor.info("info log".to_string()));
-        await!(log_actor.error("error!!".to_string()));
-
-        Ok(())
-    };
-
     let mut rt: Runtime = Runtime::new().unwrap();
 
-    rt.block_on(backward::Compat::new(test_aktor_impl()));
+    rt.spawn(lazy(|| -> Result<(), ()> {
+        let logger = PrintLogger {};
+        let counter = CountLogger::default();
 
+        let mut log_actor = PrintLoggerActor::new(logger);
+        let mut count_actor = CountLoggerActor::new(counter);
 
-    /*let system = ThreadPoolExecutor::with_thread_count(2).unwrap();
-    let logger = PrintLogger {};
-    let log_actor = PrintLoggerActor::new(system.handle(), logger);
-    // These two functions return immediately
-    // None of our written code had to use threads or fibers or futures or anything,
-    // concurrency for free.
+        for i in 0 .. 10 {
+            log_actor.info(format!("On info iteration: {}", i), count_actor.clone());
+            log_actor.error(format!("On error iteration: {}", i), count_actor.clone());
+        }
 
-    log_actor.info("info log");
-    log_actor.error("error!!");
-    system.run();*/
+        Ok(())
+    }));
+
+    rt.shutdown_on_idle().wait().unwrap();
 }
