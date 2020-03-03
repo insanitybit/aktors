@@ -16,6 +16,18 @@ pub struct Router<A, M>
     receiver: Receiver<M>,
 }
 
+impl<A, M> Router<A, M> {
+    pub fn new(
+        actor_impl: A,
+        receiver: Receiver<M>,
+    ) -> Self {
+        Self {
+            actor_impl,
+            receiver,
+        }
+    }
+}
+
 pub async fn route_wrapper<A, M>(mut router: Router<A, M>)
     where A: Actor<M>,
 {
