@@ -16,7 +16,9 @@ pub struct Router<A, M>
     receiver: Receiver<M>,
 }
 
-impl<A, M> Router<A, M> {
+impl<A, M> Router<A, M>
+    where A: Actor<M>,
+{
     pub fn new(
         actor_impl: A,
         receiver: Receiver<M>,
