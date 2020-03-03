@@ -3,6 +3,9 @@ name = "aktors"
 version = "0.2.0"
 edition = "2018"
 
+description = "Driver for derive-aktor"
+license = "MIT"
+
 authors = ["insanitybit <insanitybit@gmail.com>", "d0nut <nathanial.lattimer@gmail.com>"]
 
 [dependencies]
