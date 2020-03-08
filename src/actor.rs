@@ -54,8 +54,8 @@ pub async fn route_wrapper<A, M>(mut router: Router<A, M>)
         }
 
         router.actor_impl.route_message(msg).await;
+        tokio::task::yield_now().await;
         if router.inner_rc.load(Ordering::SeqCst) == 1 {
-            println!("closing");
             router.actor_impl.close();
         }
     }
