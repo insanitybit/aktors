@@ -7,12 +7,8 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 
-pub trait Message {
-    fn is_release(&self) -> bool;
-}
-
 #[async_trait]
-pub trait Actor<M: Message> {
+pub trait Actor<M> {
     async fn route_message(&mut self, message: M);
     fn get_actor_name(&self) -> &str;
     fn close(&mut self);
@@ -20,7 +16,6 @@ pub trait Actor<M: Message> {
 
 pub struct Router<A, M>
     where A: Actor<M>,
-          M: Message,
 {
     actor_impl: Option<A>,
     receiver: Receiver<M>,
@@ -30,7 +25,6 @@ pub struct Router<A, M>
 
 impl<A, M> Router<A, M>
     where A: Actor<M>,
-          M: Message,
 {
     pub fn new(
         actor_impl: A,
@@ -49,11 +43,7 @@ impl<A, M> Router<A, M>
 
 pub async fn route_wrapper<A, M>(mut router: Router<A, M>)
     where A: Actor<M>,
-          M: Message,
 {
-
-    let mut init = false;
-    let mut released = false;
     let mut empty_tries = 0;
 
     loop {
@@ -65,8 +55,6 @@ pub async fn route_wrapper<A, M>(mut router: Router<A, M>)
 
         match msg {
             Ok(Some(msg)) => {
-                init = true;
-                released = released || msg.is_release();
                 empty_tries = 0;
 
                 router.queue_len.clone().fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
@@ -79,12 +67,7 @@ pub async fn route_wrapper<A, M>(mut router: Router<A, M>)
                 if queue_len > 0 {
                     continue
                 }
-                // If we've dropped already, or if we haven't dropped, there are no messages,
-                // and we have already processed at least one message (possibly a release)
-                if !released {
-                    continue
-                }
-                if inner_rc == 1 || (inner_rc == 2 && init) {
+                if inner_rc <= 1 {
                     if let Some(actor_impl) = router.actor_impl.as_mut() {
                         actor_impl.close();
                     }
@@ -106,10 +89,8 @@ pub async fn route_wrapper<A, M>(mut router: Router<A, M>)
                 if queue_len > 0 {
                     continue
                 }
-                if !released {
-                    continue
-                }
-                if inner_rc == 1 || (inner_rc == 2 && init) {
+
+                if inner_rc <= 1 {
                     if let Some(ref mut actor_impl) = router.actor_impl.as_mut() {
                         actor_impl.close();
                     }
@@ -128,7 +109,7 @@ pub async fn route_wrapper<A, M>(mut router: Router<A, M>)
                     continue
                 }
 
-                if inner_rc == 1 || (inner_rc == 2 && init) {
+                if inner_rc <= 1 {
                     if let Some(ref mut actor_impl) = router.actor_impl.as_mut() {
                         actor_impl.close();
                     }

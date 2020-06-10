@@ -4,20 +4,6 @@
     <exclude-output />
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/examples" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/benches" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/libc-35d75e4d7c6f5d64/out" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/byteorder-174353a7442eb17e/out" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/parking_lot_core-abaaba40df3de1fe/out" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/rand-69010ad8d6cf386f/out" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/rand_pcg-29160db2af0910e9/out" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/rand_chacha-ef2474fc8bd2c37b/out" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/arrayvec-22ae8a7d881c38d3/out" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/proc-macro2-078b232f62ec7627/out" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/syn-5c37942ed7671197/out" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/proc-macro2-2b80875451b5b7b0/out" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/syn-e8aafc3bdcf53d1c/out" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
