@@ -47,9 +47,8 @@ pub async fn route_wrapper<A, M>(mut router: Router<A, M>)
     let mut empty_tries = 0;
 
     loop {
-        tokio::task::yield_now().await;
         let msg = tokio::time::timeout(
-            Duration::from_millis(0 + 10),
+            Duration::from_millis(empty_tries + 210),
             router.receiver.recv()
         ).await;
 
@@ -119,6 +118,5 @@ pub async fn route_wrapper<A, M>(mut router: Router<A, M>)
                 }
             }
         }
-        tokio::task::yield_now().await;
     }
 }

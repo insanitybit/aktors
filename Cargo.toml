@@ -1,6 +1,6 @@
 [package]
 name = "aktors"
-version = "0.2.6"
+version = "0.2.7"
 edition = "2018"
 
 description = "Driver for derive-aktor"
