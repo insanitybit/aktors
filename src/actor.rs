@@ -1,10 +1,9 @@
 use async_trait::async_trait;
-use std::fmt::Debug;
 
-use tokio::sync::mpsc::{channel, Receiver, Sender, error::TryRecvError};
+use tokio::sync::mpsc::Receiver;
 
-use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::Arc;
 use std::time::Duration;
 
 #[async_trait]
@@ -15,7 +14,8 @@ pub trait Actor<M> {
 }
 
 pub struct Router<A, M>
-    where A: Actor<M>,
+where
+    A: Actor<M>,
 {
     actor_impl: Option<A>,
     receiver: Receiver<M>,
@@ -24,7 +24,8 @@ pub struct Router<A, M>
 }
 
 impl<A, M> Router<A, M>
-    where A: Actor<M>,
+where
+    A: Actor<M>,
 {
     pub fn new(
         actor_impl: A,
@@ -42,29 +43,39 @@ impl<A, M> Router<A, M>
 }
 
 pub async fn route_wrapper<A, M>(mut router: Router<A, M>)
-    where A: Actor<M>,
+where
+    A: Actor<M>,
 {
     let mut empty_tries = 0;
 
     loop {
         let msg = tokio::time::timeout(
             Duration::from_millis(empty_tries + 210),
-            router.receiver.recv()
-        ).await;
+            router.receiver.recv(),
+        )
+        .await;
 
         match msg {
             Ok(Some(msg)) => {
                 empty_tries = 0;
 
-                router.queue_len.clone().fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
+                router
+                    .queue_len
+                    .clone()
+                    .fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
 
-                router.actor_impl.as_mut().expect("route_message actor_impl was None").route_message(msg).await;
+                router
+                    .actor_impl
+                    .as_mut()
+                    .expect("route_message actor_impl was None")
+                    .route_message(msg)
+                    .await;
 
                 let inner_rc = router.inner_rc.load(Ordering::SeqCst);
                 let queue_len = router.queue_len.load(Ordering::SeqCst);
 
                 if queue_len > 0 {
-                    continue
+                    continue;
                 }
                 if inner_rc <= 1 {
                     if let Some(actor_impl) = router.actor_impl.as_mut() {
@@ -86,7 +97,7 @@ pub async fn route_wrapper<A, M>(mut router: Router<A, M>)
                 let queue_len = router.queue_len.load(Ordering::SeqCst);
 
                 if queue_len > 0 {
-                    continue
+                    continue;
                 }
 
                 if inner_rc <= 1 {
@@ -104,8 +115,8 @@ pub async fn route_wrapper<A, M>(mut router: Router<A, M>)
                 let inner_rc = router.inner_rc.load(Ordering::SeqCst);
                 let queue_len = router.queue_len.load(Ordering::SeqCst);
 
-                if queue_len > 0{
-                    continue
+                if queue_len > 0 {
+                    continue;
                 }
 
                 if inner_rc <= 1 {
