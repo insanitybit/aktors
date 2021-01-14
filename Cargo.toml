@@ -1,6 +1,6 @@
 [package]
 name = "aktors"
-version = "0.2.7"
+version = "0.3.0"
 edition = "2018"
 
 description = "Driver for derive-aktor"
@@ -9,8 +9,8 @@ license = "MIT"
 authors = ["insanitybit <insanitybit@gmail.com>", "d0nut <nathanial.lattimer@gmail.com>"]
 
 [dependencies]
-async-trait = "0.1.24"
+async-trait = "0.1"
 
 [dependencies.tokio]
-version = "0.2.13"
-features = ["sync", "rt-core", "full"]
+version = "0.2"
+features = ["sync", "time"]
